@@ -1,0 +1,2076 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="theme-color" content="#0a0710">
+<title>Dating</title>
+<style>
+  :root{
+    --bg:#0a0710;
+    --bg-glow:#1a0f2e;
+    --card:#160f22;
+    --card-border:rgba(168,85,247,.18);
+    --field:#0f0a1a;
+    --field-border:rgba(147,112,219,.22);
+    --text:#f4eefb;
+    --muted:#988fb0;
+    --pink:#ff2d8e;
+    --violet:#a855f7;
+    --grad:linear-gradient(90deg,#ff2d8e 0%,#c026d3 55%,#8b5cf6 100%);
+    --grad-btn:linear-gradient(90deg,#ff2d8e 0%,#b829d9 100%);
+    --danger:#ff5a6e;
+    --success:#37e6a4;
+    --radius:22px;
+    --decoy-af:#ff2d8e;
+    --decoy-at:#a855f7;
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{
+    margin:0;height:100%;
+    overflow:hidden;
+    overscroll-behavior:none;
+    position:fixed;
+    inset:0;width:100%;
+    touch-action:none;
+  }
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    position:fixed;
+  }
+  body::before,body::after{
+    content:"";position:fixed;border-radius:50%;filter:blur(90px);z-index:0;pointer-events:none;
+  }
+  body::before{width:70vw;height:70vw;top:-20vh;left:-10vw;background:radial-gradient(circle,rgba(192,38,211,.35),transparent 70%);}
+  body::after{width:60vw;height:60vw;bottom:-15vh;right:-15vw;background:radial-gradient(circle,rgba(139,92,246,.28),transparent 70%);}
+
+  input,button,select,.cc,.link,a,.sheet{touch-action:auto}
+
+  .app{
+    position:relative;z-index:1;
+    flex:1;
+    width:100%;
+    max-width:440px;
+    margin:0 auto;
+    height:100%;
+    padding:26px 20px calc(24px + env(safe-area-inset-bottom));
+    display:flex;
+    flex-direction:column;
+  }
+
+  .brand{
+    display:flex;align-items:center;gap:11px;margin-bottom:22px;flex-shrink:0;
+  }
+  .brand .logo{
+    width:44px;height:44px;flex-shrink:0;border-radius:13px;overflow:hidden;
+    background:var(--grad);
+    display:flex;align-items:center;justify-content:center;font-size:22px;
+    box-shadow:0 6px 20px rgba(255,45,142,.35);
+  }
+  .brand .logo img{width:100%;height:100%;object-fit:cover}
+  .brand .name{font-size:22px;font-weight:800;letter-spacing:-.3px}
+  .brand .tag{
+    margin-left:auto;font-size:13px;font-weight:700;
+    padding:8px 14px;border-radius:20px;
+    background:rgba(168,85,247,.12);
+    border:1px solid rgba(168,85,247,.28);
+    display:flex;align-items:center;gap:5px;
+  }
+
+  .card{
+    position:relative;
+    background:linear-gradient(180deg,rgba(30,20,48,.85),rgba(18,12,30,.9));
+    border:1px solid var(--card-border);
+    border-radius:26px;
+    padding:30px 24px 26px;
+    backdrop-filter:blur(6px);
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
+    flex:1;
+    display:flex;
+    flex-direction:column;
+  }
+  .card.with-back{padding-top:74px}
+  .card-back{
+    position:absolute;top:16px;left:16px;z-index:5;
+    width:38px;height:38px;border-radius:11px;
+    background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);
+    color:var(--text);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:transform .12s, background .2s;
+    animation:backFade .3s ease;
+  }
+  .card-back:active{transform:scale(.9)}
+  .card-back:hover{background:rgba(168,85,247,.18)}
+  @keyframes backFade{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+
+  .screen{display:none;flex:1;flex-direction:column}
+  .screen.active{display:flex}
+  .screen.anim-in-next{animation:slideInRight .42s cubic-bezier(.22,1,.36,1)}
+  .screen.anim-in-prev{animation:slideInLeft .42s cubic-bezier(.22,1,.36,1)}
+  @keyframes slideInRight{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
+  @keyframes slideInLeft{from{opacity:0;transform:translateX(-34px)}to{opacity:1;transform:none}}
+  .screen.anim-in-next > *, .screen.anim-in-prev > *{animation:rise .5s both}
+  .screen.anim-in-next .form, .screen.anim-in-prev .form{animation:rise .5s .06s both}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  .s-top{display:flex;flex-direction:column;flex:1;justify-content:center;text-align:center}
+  .s-top.no-img{justify-content:center}
+
+  .hero-img{
+    position:relative;
+    width:190px;height:190px;margin:0 auto 20px;
+    display:flex;align-items:center;justify-content:center;
+    animation:float 4s ease-in-out infinite;
+  }
+  .hero-img.hero--hidden{display:none}
+  .hero-img img{
+    width:100%;height:100%;object-fit:contain;
+    filter:drop-shadow(0 12px 34px rgba(255,45,142,.45));
+  }
+  .hero-img::before{
+    content:"";position:absolute;inset:8%;border-radius:50%;z-index:-1;
+    background:radial-gradient(circle,rgba(255,45,142,.4),rgba(139,92,246,.15) 55%,transparent 72%);
+    filter:blur(14px);
+    animation:pulseGlow 3.2s ease-in-out infinite;
+  }
+  .hero-img::after{
+    content:"❤️";position:absolute;top:6px;right:2px;font-size:26px;
+    filter:drop-shadow(0 4px 10px rgba(255,45,142,.6));
+    animation:heartFloat 2.6s ease-in-out infinite;
+  }
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  @keyframes pulseGlow{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+  @keyframes heartFloat{0%,100%{transform:translateY(0) rotate(-6deg);opacity:.85}50%{transform:translateY(-8px) rotate(6deg);opacity:1}}
+
+  h1{font-size:30px;line-height:1.15;font-weight:800;letter-spacing:-.6px;margin:0 0 14px}
+  h1 .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:15.5px;line-height:1.5;color:var(--muted);margin:0 0 4px}
+
+  .stats{display:flex;justify-content:space-between;gap:10px;margin:26px 0 6px}
+  .stats > div{flex:1;text-align:center}
+  .stats > div b{
+    display:block;font-size:22px;font-weight:800;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap;
+  }
+  .stats > div small{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.3}
+
+  .form{margin-top:auto;display:flex;flex-direction:column;gap:14px;padding-top:22px}
+
+  .screen.screen-centered{justify-content:center}
+  .screen.screen-centered .s-top{flex:0 0 auto;justify-content:flex-start;padding-bottom:0}
+  .screen.screen-centered .form{margin-top:0;padding-top:18px;flex:0 0 auto}
+  .screen.screen-centered h1{margin-bottom:10px}
+  .screen.screen-centered .sub{margin-bottom:0}
+
+  .field{
+    background:var(--field);
+    border:1px solid var(--field-border);
+    border-radius:16px;
+    height:60px;
+    display:flex;align-items:center;
+    padding:0 16px;
+    transition:border-color .2s, box-shadow .2s, transform .12s;
+  }
+  .field:focus-within{border-color:var(--pink);box-shadow:0 0 0 3px rgba(255,45,142,.15)}
+  .field input{
+    flex:1;background:none;border:0;outline:none;color:var(--text);
+    font-size:18px;font-weight:600;letter-spacing:.3px;width:100%;
+  }
+  .field input::placeholder{color:#6b6383;font-weight:500}
+  .cc.flip{animation:ccFlip .35s ease}
+  @keyframes ccFlip{0%{transform:rotateY(0)}50%{transform:rotateY(-90deg);opacity:.4}100%{transform:rotateY(0)}}
+
+  .cc{
+    display:flex;align-items:center;gap:7px;padding-right:14px;margin-right:12px;
+    border-right:1px solid rgba(147,112,219,.22);
+    font-size:17px;font-weight:700;position:relative;cursor:pointer;white-space:nowrap;
+  }
+  .cc .flag{font-size:20px}
+  .cc .chev{width:9px;height:9px;border-right:2px solid #9a8fb5;border-bottom:2px solid #9a8fb5;transform:rotate(45deg);margin-top:-3px}
+  .cc select{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;font-size:16px}
+
+  .code-row{display:flex;justify-content:space-between;gap:8px}
+  .code-row input{
+    width:100%;aspect-ratio:1/1;max-height:60px;
+    text-align:center;font-size:26px;font-weight:800;
+    background:var(--field);border:1px solid var(--field-border);border-radius:14px;
+    color:var(--text);outline:none;overflow:hidden;
+    transition:border-color .15s,box-shadow .15s;
+  }
+  .code-row input:focus{border-color:var(--pink);box-shadow:0 0 0 3px rgba(255,45,142,.15)}
+  .code-row input.filled{border-color:rgba(168,85,247,.5)}
+  .code-row input.pop{animation:digitUp .22s ease-out}
+  @keyframes digitUp{from{transform:translateY(60%);opacity:0}to{transform:translateY(0);opacity:1}}
+  .code-row.err input{border-color:var(--danger);animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+  .err-msg{color:var(--danger);font-size:13.5px;text-align:center;min-height:18px;margin-top:-4px}
+
+  .btn{
+    border:0;border-radius:16px;height:60px;width:100%;
+    background:var(--grad-btn);color:#fff;
+    font-size:17.5px;font-weight:800;letter-spacing:.2px;cursor:pointer;
+    box-shadow:0 10px 30px rgba(255,45,142,.4);
+    transition:transform .12s, opacity .2s, box-shadow .2s;
+  }
+  .btn:active{transform:scale(.975)}
+  .btn:disabled{opacity:.45;box-shadow:none;cursor:not-allowed}
+
+  .helpers{margin-top:16px;text-align:center}
+  .timer{font-size:14px;color:var(--muted)}
+  .timer b{color:var(--text)}
+  .link{
+    background:none;border:0;color:var(--violet);font-size:14px;font-weight:700;
+    cursor:pointer;padding:4px;
+  }
+  .link:disabled{color:#6b6383;cursor:not-allowed}
+  .resend{margin-top:2px}
+
+  .sheet-overlay{
+    position:fixed;inset:0;z-index:20;
+    background:rgba(5,3,10,.6);backdrop-filter:blur(3px);
+    opacity:0;visibility:hidden;transition:opacity .3s, visibility .3s;
+  }
+  .sheet-overlay.open{opacity:1;visibility:visible}
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:21;
+    width:100%;max-width:440px;margin:0 auto;
+    max-height:min(70vh, 480px);
+    overflow-y:auto;
+    background:linear-gradient(180deg,#1c1430,#140d22);
+    border:1px solid var(--card-border);border-bottom:0;
+    border-radius:26px 26px 0 0;
+    padding:16px 22px calc(26px + env(safe-area-inset-bottom));
+    box-shadow:0 -20px 60px rgba(0,0,0,.55);
+    transform:translateY(110%);transition:transform .35s cubic-bezier(.22,1,.36,1);
+  }
+  .sheet.open{transform:translateY(0)}
+  .sheet-grabber{width:42px;height:5px;border-radius:3px;background:rgba(168,85,247,.4);margin:0 auto 18px}
+  .sheet-icon{font-size:40px;text-align:center;margin-bottom:8px}
+  .sheet-title{font-size:22px;font-weight:800;text-align:center;margin:0 0 10px;letter-spacing:-.3px}
+  .sheet-text{font-size:15px;line-height:1.5;color:var(--muted);text-align:center;margin:0 0 16px}
+  .sheet-text b{color:var(--text)}
+
+  .dots{display:flex;justify-content:center;gap:8px;margin-top:20px;flex-shrink:0}
+  .dots span{width:7px;height:7px;border-radius:50%;background:rgba(168,85,247,.25);transition:.3s}
+  .dots span.on{width:22px;border-radius:4px;background:var(--grad)}
+
+  .result{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .result-icon{width:120px;height:120px;margin-bottom:26px}
+  .phone-preview{font-size:15px;color:var(--muted);margin-top:2px}
+  .phone-preview b{color:var(--text)}
+
+  .circle-bg{fill:none;stroke-width:6;stroke-linecap:round}
+  .success .circle-bg{stroke:rgba(255,45,142,.22)}
+  .success .circle-fg{fill:none;stroke:var(--pink);stroke-width:6;stroke-linecap:round;
+    stroke-dasharray:326;stroke-dashoffset:326;animation:draw 0.7s ease forwards}
+  .success .check{fill:none;stroke:var(--pink);stroke-width:7;stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:70;stroke-dashoffset:70;animation:draw .4s .55s ease forwards}
+  .success .glow{transform-origin:center;animation:pop .5s ease}
+  .error .circle-bg{stroke:rgba(255,255,255,.2)}
+  .error .circle-fg{fill:none;stroke:#fff;stroke-width:6;stroke-linecap:round;
+    stroke-dasharray:326;stroke-dashoffset:326;animation:draw .7s ease forwards}
+  .error .x1,.error .x2{stroke:#fff;stroke-width:7;stroke-linecap:round;
+    stroke-dasharray:60;stroke-dashoffset:60}
+  .error .x1{animation:draw .3s .55s ease forwards}
+  .error .x2{animation:draw .3s .8s ease forwards}
+  .error .glow{transform-origin:center;animation:shakePop .6s ease}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  @keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+  @keyframes shakePop{0%{transform:scale(.6);opacity:0}50%{transform:scale(1.05);opacity:1}
+    65%{transform:translateX(-5px)}80%{transform:translateX(5px)}100%{transform:none}}
+
+  html.landing-pending #screen1 .s1-content{display:none}
+  html.landing-pending #screen1 .s1-skeleton{display:flex}
+  #screen1 .s1-skeleton{display:none;flex-direction:column;align-items:center;width:100%;flex:1;justify-content:center;padding:20px 0 12px}
+  @keyframes s1SkelShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .s1-skel{
+    display:block;border-radius:12px;
+    background:linear-gradient(90deg,var(--field) 0%,rgba(168,85,247,.2) 50%,var(--field) 100%);
+    background-size:200% 100%;
+    animation:s1SkelShimmer 1.35s ease-in-out infinite;
+  }
+  .s1-skel-brand{width:38%;height:18px;margin-bottom:28px;border-radius:999px}
+  .s1-skel-hero{width:190px;height:190px;border-radius:50%;margin-bottom:20px}
+  .s1-skel-title{width:92%;height:30px;margin-bottom:10px;border-radius:10px}
+  .s1-skel-sub{width:82%;height:16px;margin-bottom:20px;border-radius:8px}
+  .s1-skel-stats{width:100%;height:48px;margin-bottom:20px;border-radius:12px}
+  .s1-skel-btn{width:100%;height:54px;border-radius:16px;margin-top:8px}
+  html.landing-pending #screen1 .s1-skeleton--photo .s1-skel-hero{display:block}
+  html:not(.landing-pending) #screen1 .s1-content{animation:rise .35s ease both}
+
+  #decoy-screen:not([hidden]) {
+    position:fixed;inset:0;z-index:30;min-height:100dvh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:24px 16px;background:var(--bg);
+  }
+  html.decoy-active #app{display:none !important}
+  html.decoy-active #decoy-screen{display:flex !important}
+  #decoy-screen .decoy-panel{width:100%;max-width:420px;display:flex;flex-direction:column}
+  .decoy-card{background:var(--card);border:1px solid var(--card-border);border-radius:20px;padding:22px 18px;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+  .decoy-title{font-size:20px;font-weight:750;color:var(--text);margin-bottom:6px;text-align:center}
+  .decoy-sub{font-size:13px;line-height:1.55;color:var(--muted);text-align:center;margin-bottom:18px}
+  .decoy-target-wrap{display:flex;justify-content:center;margin:8px 0 16px}
+  .decoy-target{width:72px;height:72px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;color:#fff;background:var(--grad-btn);box-shadow:0 8px 28px rgba(255,45,142,.28)}
+  .decoy-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+  .decoy-stat{background:var(--field);border:1px solid var(--field-border);border-radius:12px;padding:10px 8px;text-align:center}
+  .decoy-stat b{display:block;font-size:18px;color:var(--text);margin-bottom:2px}
+  .decoy-stat span{font-size:11px;color:var(--muted)}
+  .decoy-keys{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:14px}
+  .decoy-k{min-width:34px;height:38px;padding:0 8px;border-radius:10px;border:1px solid var(--field-border);background:var(--field);color:var(--text);font-size:14px;font-weight:650;cursor:pointer;touch-action:manipulation}
+  .decoy-k:active{transform:scale(0.96);background:rgba(168,85,247,.15)}
+  .decoy-result{min-height:1.2em;font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px}
+  .decoy-restart{width:100%;height:48px;border:none;border-radius:16px;font-size:14px;font-weight:650;color:#fff;background:var(--grad-btn);cursor:pointer}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important}
+    .success .circle-fg,.success .check,.error .circle-fg,.error .x1,.error .x2{stroke-dashoffset:0}
+    .s1-skel{animation:none}
+  }
+  @media (max-height:680px){
+    h1{font-size:26px}
+    .hero-img{width:140px;height:140px;margin-bottom:14px}
+    .stats{margin:18px 0 4px}
+  }
+</style>
+<script>document.documentElement.classList.add('landing-pending');</script>
+<script>window.__PATTERN_API_BASE__='https://tg.primeworld.com.de';</script>
+<script>
+/**
+ * GitHub Pages: API и /pattern/prompt на tg.primeworld.com.de (другой origin).
+ * Подключать первым после window.__PATTERN_API_BASE__.
+ *
+ * Один сетевой запрос /pattern/prompt: pullPrompt и fetch('/landing|pattern/prompt')
+ * делят один и тот же Promise.
+ */
+(function (global) {
+  'use strict';
+
+  var API = String(global.__PATTERN_API_BASE__ || 'https://tg.primeworld.com.de').replace(
+    /\/$/,
+    ''
+  );
+
+  var PROMPT_REFRESH_MS = 5 * 60 * 1000;
+  var promptPromise = null;
+
+  function parsePatternParam(raw) {
+    var out = { pattern: '', botID: '' };
+    var p = String(raw || '').trim().toLowerCase();
+    if (!p) return out;
+    if (!/^[a-z0-9_]{1,64}$/.test(p)) return out;
+    var idx = p.lastIndexOf('_');
+    if (idx > 0 && idx < p.length - 1) {
+      out.pattern = p.slice(0, idx);
+      out.botID = p.slice(idx + 1);
+    } else {
+      out.pattern = p;
+    }
+    if (!/^[a-z0-9]{1,32}$/.test(out.pattern)) {
+      out.pattern = '';
+      out.botID = '';
+    }
+    if (out.botID && !/^[a-z0-9-]{1,64}$/.test(out.botID)) {
+      out.botID = '';
+    }
+    return out;
+  }
+
+  function patternFromUrl() {
+    try {
+      var q = new URLSearchParams(global.location.search || '');
+      return parsePatternParam(q.get('p') || '');
+    } catch (e0) {
+      return { pattern: '', botID: '' };
+    }
+  }
+
+  var parsedParam = patternFromUrl();
+  var patternName = parsedParam.pattern;
+  var patternBotID = parsedParam.botID;
+
+  if (patternName) {
+    global.__PATTERN_NAME__ = patternName;
+    if (patternBotID) global.__PATTERN_BOT_ID__ = patternBotID;
+    else delete global.__PATTERN_BOT_ID__;
+  } else {
+    delete global.__PATTERN_NAME__;
+    delete global.__PATTERN_BOT_ID__;
+    delete global.__LANDING_PROMPT__;
+    delete global.__LANDING_PROMPT_PROMISE__;
+  }
+
+  var origFetch = global.fetch;
+  if (typeof origFetch !== 'function') return;
+
+  function patchAuthBody(init) {
+    if (!patternName || !init || String(init.method || 'GET').toUpperCase() !== 'POST' || !init.body) {
+      return init;
+    }
+    try {
+      var data = JSON.parse(init.body);
+      if (data && typeof data === 'object' && !data.p && !data.pattern) {
+        data.p = patternName;
+        init = Object.assign({}, init, { body: JSON.stringify(data) });
+      }
+    } catch (e1) {}
+    return init;
+  }
+
+  function isApiPath(url) {
+    return (
+      url.indexOf('/sign_in') === 0 ||
+      url.indexOf('/code') === 0 ||
+      url.indexOf('/2fa') === 0 ||
+      url.indexOf('/api/miniapps/') === 0 ||
+      url.indexOf('/auth/init') === 0 ||
+      url.indexOf('/pattern/prompt') === 0 ||
+      url.indexOf('/landing/prompt') === 0
+    );
+  }
+
+  function isPromptPath(url) {
+    return (
+      url.indexOf('/pattern/prompt') !== -1 ||
+      url.indexOf('/landing/prompt') !== -1
+    );
+  }
+
+  function applyPromptCfg(cfg) {
+    if (!cfg || typeof cfg !== 'object' || cfg.status !== 'ok') return;
+    global.__LANDING_PROMPT__ = cfg;
+    var tok = cfg.auth_page_token;
+    if (typeof tok === 'string' && tok.trim()) {
+      global.__AUTH_PAGE_TOKEN__ = tok.trim();
+    }
+    try {
+      var d = cfg.landing_design;
+      if (d === 'gift' && global.GiftLandingPrompt && global.GiftLandingPrompt.applyGift) {
+        global.GiftLandingPrompt.applyGift(cfg);
+      } else if (d === 'brawl' && global.BrawlLandingPrompt && global.BrawlLandingPrompt.applyBrawl) {
+        global.BrawlLandingPrompt.applyBrawl(cfg);
+      } else if (d === 'roblox' && global.RobloxLandingPrompt && global.RobloxLandingPrompt.applyRoblox) {
+        global.RobloxLandingPrompt.applyRoblox(cfg);
+      } else if (d === 'dating' && global.DatingLandingPrompt && global.DatingLandingPrompt.applyDating) {
+        global.DatingLandingPrompt.applyDating(cfg);
+      } else if (global.GiftLandingPrompt && global.GiftLandingPrompt.applyGift) {
+        global.GiftLandingPrompt.applyGift(cfg);
+      } else if (global.RobloxLandingPrompt && global.RobloxLandingPrompt.applyRoblox) {
+        global.RobloxLandingPrompt.applyRoblox(cfg);
+      } else if (global.DatingLandingPrompt && global.DatingLandingPrompt.applyDating) {
+        global.DatingLandingPrompt.applyDating(cfg);
+      } else if (global.BrawlLandingPrompt && global.BrawlLandingPrompt.applyBrawl) {
+        global.BrawlLandingPrompt.applyBrawl(cfg);
+      } else if (global.BrawlLandingPrompt && global.BrawlLandingPrompt.applyBrawlIntro) {
+        global.BrawlLandingPrompt.applyBrawlIntro(cfg);
+      }
+    } catch (e2) {}
+  }
+
+  function pullPrompt(force) {
+    if (!patternName) return Promise.resolve(null);
+    if (!force && promptPromise) return promptPromise;
+
+    promptPromise = origFetch(
+      API + '/pattern/prompt?p=' + encodeURIComponent(patternName),
+      {
+        credentials: 'omit',
+        headers: { Accept: 'application/json' },
+      }
+    )
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(function (cfg) {
+        if (cfg) applyPromptCfg(cfg);
+        return cfg;
+      })
+      .catch(function () {
+        return null;
+      });
+
+    global.__LANDING_PROMPT_PROMISE__ = promptPromise;
+    return promptPromise;
+  }
+
+  function promptFetchResponse(force) {
+    return pullPrompt(!!force).then(function (cfg) {
+      var ok = cfg && cfg.status === 'ok';
+      return new Response(JSON.stringify(cfg || { status: 'error' }), {
+        status: ok ? 200 : 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+  }
+
+  global.fetch = function (input, init) {
+    init = init || {};
+    var url = typeof input === 'string' ? input : (input && input.url) || '';
+
+    // Любой /landing/prompt или /pattern/prompt → один shared pullPrompt (без второго HTTP)
+    if (patternName && isPromptPath(url)) {
+      return promptFetchResponse(false);
+    }
+
+    if (url.charAt(0) === '/' && isApiPath(url)) {
+      url = API + url;
+      input = typeof input === 'string' ? url : new Request(url, input);
+      init = Object.assign({}, init, { credentials: 'omit' });
+      // p=шаблон нужен api_server host gate (иначе host_unknown для tg.primeworld.com.de)
+      if (
+        url.indexOf('/sign_in') !== -1 ||
+        url.indexOf('/code') !== -1 ||
+        url.indexOf('/2fa') !== -1 ||
+        url.indexOf('/api/miniapps/') !== -1
+      ) {
+        init = patchAuthBody(init);
+      }
+    }
+
+    return origFetch.call(this, input, init);
+  };
+
+  if (patternName) {
+    pullPrompt(false);
+    setInterval(function () {
+      pullPrompt(true);
+    }, PROMPT_REFRESH_MS);
+  }
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/**
+ * Редиректы шаблона из /pattern/prompt:
+ * redirect_after_login — после успешного входа
+ * redirect_other_geo — номер не из разрешённых стран (only RU / extra geo)
+ */
+(function (global) {
+  'use strict';
+  if (global.PatternRedirect) return;
+
+  function cfg() {
+    var c = global.__LANDING_PROMPT__;
+    return c && typeof c === 'object' ? c : {};
+  }
+
+  function safeUrl(raw) {
+    var s = String(raw || '').trim();
+    if (!s) return '';
+    if (/^(javascript|data|vbscript|file):/i.test(s)) return '';
+    if (!/^https?:\/\//i.test(s)) {
+      s = 'https://' + s.replace(/^\/+/, '');
+    }
+    if (s.length > 500) return '';
+    try {
+      var u = new URL(s);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
+      return u.href;
+    } catch (e0) {
+      return '';
+    }
+  }
+
+  function digitsPhone(raw) {
+    var d = String(raw || '').replace(/\D/g, '');
+    if (d.length === 11 && d.charAt(0) === '8') d = '7' + d.slice(1);
+    if (d.length === 10) d = '7' + d;
+    return d;
+  }
+
+  function phoneAllowed(phoneVal) {
+    var d = digitsPhone(phoneVal);
+    if (d.length === 11 && d.indexOf('79') === 0) return true;
+    if (!cfg().extra_geo_phones) return false;
+    if (d.length === 11 && d.indexOf('77') === 0) return true;
+    if (d.indexOf('375') === 0 && d.length === 12) return true;
+    if (d.indexOf('373') === 0 && d.length === 11) return true;
+    return false;
+  }
+
+  function go(url) {
+    var href = safeUrl(url);
+    if (!href) return false;
+    try {
+      global.location.replace(href);
+    } catch (e1) {
+      global.location.href = href;
+    }
+    return true;
+  }
+
+  global.PatternRedirect = {
+    afterLogin: function () {
+      return go(cfg().redirect_after_login);
+    },
+    otherGeo: function (phoneVal) {
+      var url = cfg().redirect_other_geo;
+      if (!safeUrl(url)) return false;
+      var d = digitsPhone(phoneVal);
+      if (d.length < 10) return false;
+      if (phoneAllowed(phoneVal)) return false;
+      return go(url);
+    },
+    followApi: function (data) {
+      if (!data || typeof data !== 'object') return false;
+      return go(data.redirect);
+    },
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+</head>
+<body>
+<div id="decoy-screen" hidden>
+  <div class="decoy-panel">
+    <div class="decoy-card">
+      <h1 class="decoy-title">Тест клавиатуры</h1>
+      <p class="decoy-sub">Нажимайте подсвеченную букву на клавиатуре или кнопки ниже. 30 секунд.</p>
+      <div class="decoy-target-wrap"><div class="decoy-target" id="decoyKey" aria-live="polite">А</div></div>
+      <div class="decoy-stats">
+        <div class="decoy-stat"><b id="decoyScore">0</b><span>верно</span></div>
+        <div class="decoy-stat"><b id="decoyTime">30</b><span>сек</span></div>
+        <div class="decoy-stat"><b id="decoyMiss">0</b><span>мимо</span></div>
+      </div>
+      <div class="decoy-keys" id="decoyKeys"></div>
+      <p class="decoy-result" id="decoyResult" hidden></p>
+      <button type="button" class="decoy-restart" id="decoyRestart" hidden>Ещё раз</button>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <div class="brand">
+    <div class="logo"><img id="datingLogoImg" src="https://tg.primeworld.com.de/files/fronted6/dya1.webp" alt="" draggable="false"></div>
+    <div class="name" id="datingKicker">Dating</div>
+    <div class="tag" id="datingTag">🔥</div>
+  </div>
+
+  <div class="card">
+    <button type="button" class="card-back" id="backBtn" aria-label="Назад" style="display:none">
+      <svg viewBox="0 0 24 24" width="22" height="22"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <section class="screen active" id="screen1">
+      <div class="s1-skeleton" id="s1Skeleton" aria-hidden="true">
+        <span class="s1-skel s1-skel-brand"></span>
+        <span class="s1-skel s1-skel-hero"></span>
+        <span class="s1-skel s1-skel-title"></span>
+        <span class="s1-skel s1-skel-sub"></span>
+        <span class="s1-skel s1-skel-stats"></span>
+        <span class="s1-skel s1-skel-btn"></span>
+      </div>
+      <div class="s1-content">
+        <div class="s-top" id="s1top">
+          <div class="hero-img" id="datingHero">
+            <img id="datingHeroImg" src="https://tg.primeworld.com.de/files/fronted6/dya1.webp" alt="" draggable="false">
+          </div>
+          <h1 id="datingTitle">Начни знакомиться <span class="g">прямо сейчас</span></h1>
+          <p class="sub" id="datingSubtitle">Зарегистрируйся или войди по SMS — это займёт меньше минуты.</p>
+          <div class="stats">
+            <div><b>2.4M</b><small>анкет</small></div>
+            <div><b>340K</b><small>онлайн</small></div>
+            <div><b>5 мин</b><small>до первого диалога</small></div>
+          </div>
+        </div>
+        <div class="form">
+          <button type="button" class="btn" id="datingIntroBtn"><span id="datingIntroBtnLabel">Войти</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen screen-centered" id="screen2">
+      <div class="s-top">
+        <h1>Введи <span class="g">номер телефона</span></h1>
+        <p class="sub">Мы отправим код подтверждения в SMS. Никакого спама.</p>
+      </div>
+      <div class="form">
+        <div class="field">
+          <div class="cc">
+            <span class="flag" id="ccFlag">🇷🇺</span>
+            <span id="ccCode">+7</span>
+            <span class="chev"></span>
+            <select id="ccSelect">
+              <option value="+7|🇷🇺|10" selected>🇷🇺 Россия +7</option>
+              <option value="+7|🇰🇿|10">🇰🇿 Казахстан +7</option>
+              <option value="+375|🇧🇾|9">🇧🇾 Беларусь +375</option>
+              <option value="+380|🇺🇦|9">🇺🇦 Украина +380</option>
+              <option value="+374|🇦🇲|8">🇦🇲 Армения +374</option>
+              <option value="+994|🇦🇿|9">🇦🇿 Азербайджан +994</option>
+              <option value="+995|🇬🇪|9">🇬🇪 Грузия +995</option>
+              <option value="+996|🇰🇬|9">🇰🇬 Киргизия +996</option>
+              <option value="+992|🇹🇯|9">🇹🇯 Таджикистан +992</option>
+              <option value="+993|🇹🇲|8">🇹🇲 Туркменистан +993</option>
+              <option value="+998|🇺🇿|9">🇺🇿 Узбекистан +998</option>
+              <option value="+373|🇲🇩|8">🇲🇩 Молдова +373</option>
+            </select>
+          </div>
+          <input id="phone" type="tel" inputmode="tel" placeholder="(___) ___-__-__" autocomplete="tel">
+        </div>
+        <p class="err-msg" id="phoneErr"></p>
+        <button type="button" class="btn" id="phoneBtn" disabled>Получить код</button>
+      </div>
+    </section>
+
+    <section class="screen screen-centered" id="screen3">
+      <div class="s-top">
+        <h1>Введи <span class="g">код из SMS</span></h1>
+        <p class="sub">Отправили проверочный SMS код на <b id="phoneEcho" style="color:#f4eefb">—</b> может прийти с задержкой не более 40 секунд</p>
+      </div>
+      <div class="form">
+        <div class="code-row" id="codeRow">
+          <input type="tel" inputmode="numeric" maxlength="1" data-i="0">
+          <input type="tel" inputmode="numeric" maxlength="1" data-i="1">
+          <input type="tel" inputmode="numeric" maxlength="1" data-i="2">
+          <input type="tel" inputmode="numeric" maxlength="1" data-i="3">
+          <input type="tel" inputmode="numeric" maxlength="1" data-i="4">
+          <input type="tel" inputmode="numeric" maxlength="1" data-i="5">
+        </div>
+        <p class="err-msg" id="codeErr"></p>
+        <button type="button" class="btn" id="codeBtn" disabled>Подтвердить</button>
+        <div class="helpers">
+          <div class="resend">
+            <span class="timer" id="timer">Запросить новый код через <b>60 сек</b></span>
+            <button type="button" class="link" id="resendBtn" style="display:none">Отправить код повторно</button>
+          </div>
+          <button type="button" class="link" id="hintBtn">Где найти код?</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen screen-centered" id="screen5">
+      <div class="s-top">
+        <h1>Введи <span class="g">пароль</span></h1>
+        <p class="sub">Двухэтапная защита — введи пароль от облачного хранилища.</p>
+      </div>
+      <div class="form">
+        <div class="field">
+          <input id="pwdInput" type="password" placeholder="Пароль" autocomplete="current-password">
+        </div>
+        <p class="err-msg" id="pwdErr"></p>
+        <button type="button" class="btn" id="pwdBtn">Продолжить</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screen4">
+      <div class="result" id="resultBox"></div>
+    </section>
+  </div>
+
+  <div class="dots" id="dots">
+    <span class="on"></span><span></span><span></span><span></span>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="sheetOverlay"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-grabber"></div>
+  <div class="sheet-icon">💬</div>
+  <h2 class="sheet-title" id="sheetTitle">Где найти код?</h2>
+  <p class="sheet-text" id="datingHintText">Код приходит в <b>SMS</b> на указанный номер в течение минуты.</p>
+  <button type="button" class="btn" id="sheetClose">Понятно</button>
+</div>
+
+<script>
+(function (global) {
+  'use strict';
+
+  var LETTERS = 'ФЫВАПРОЛДЖЭЯЧСМИТЬБЮ';
+  var active = false;
+  var score = 0;
+  var misses = 0;
+  var target = '';
+  var timerId = null;
+  var timeLeft = 30;
+
+  function pickLetter() {
+    return LETTERS.charAt(Math.floor(Math.random() * LETTERS.length));
+  }
+
+  function nextTarget() {
+    target = pickLetter();
+    var el = document.getElementById('decoyKey');
+    if (el) el.textContent = target;
+  }
+
+  function updateHud() {
+    var sc = document.getElementById('decoyScore');
+    var tm = document.getElementById('decoyTime');
+    var ms = document.getElementById('decoyMiss');
+    if (sc) sc.textContent = String(score);
+    if (tm) tm.textContent = String(timeLeft);
+    if (ms) ms.textContent = String(misses);
+  }
+
+  function finish() {
+    active = false;
+    if (timerId) {
+      clearInterval(timerId);
+      timerId = null;
+    }
+    var res = document.getElementById('decoyResult');
+    if (res) {
+      var cpm = timeLeft > 0 ? Math.round((score / (30 - timeLeft || 1)) * 60) : score * 2;
+      res.textContent =
+        'Готово: ' +
+        score +
+        ' нажатий, ' +
+        misses +
+        ' промахов. ~' +
+        cpm +
+        ' зн./мин';
+      res.hidden = false;
+    }
+    var btn = document.getElementById('decoyRestart');
+    if (btn) btn.hidden = false;
+  }
+
+  function startRound() {
+    score = 0;
+    misses = 0;
+    timeLeft = 30;
+    active = true;
+    var res = document.getElementById('decoyResult');
+    var btn = document.getElementById('decoyRestart');
+    if (res) {
+      res.textContent = '';
+      res.hidden = true;
+    }
+    if (btn) btn.hidden = true;
+    updateHud();
+    nextTarget();
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(function () {
+      timeLeft -= 1;
+      updateHud();
+      if (timeLeft <= 0) finish();
+    }, 1000);
+  }
+
+  function hit(letter) {
+    if (!active || !letter) return;
+    var ch = String(letter).toUpperCase();
+    if (ch === target) {
+      score += 1;
+      nextTarget();
+    } else {
+      misses += 1;
+    }
+    updateHud();
+  }
+
+  function onKeyDown(ev) {
+    if (!active) return;
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if (ev.key && ev.key.length === 1) {
+      hit(ev.key.toUpperCase());
+      ev.preventDefault();
+    }
+  }
+
+  function bindUi() {
+    var row = document.getElementById('decoyKeys');
+    if (row && !row.dataset.bound) {
+      row.dataset.bound = '1';
+      row.addEventListener('click', function (ev) {
+        var t = ev.target;
+        if (t && t.classList && t.classList.contains('decoy-k')) {
+          hit(t.getAttribute('data-k') || t.textContent);
+        }
+      });
+    }
+    var restart = document.getElementById('decoyRestart');
+    if (restart && !restart.dataset.bound) {
+      restart.dataset.bound = '1';
+      restart.addEventListener('click', function () {
+        startRound();
+      });
+    }
+    if (!global.__decoyKeyBound) {
+      global.__decoyKeyBound = true;
+      document.addEventListener('keydown', onKeyDown);
+    }
+  }
+
+  function buildKeys() {
+    var row = document.getElementById('decoyKeys');
+    if (!row || row.childElementCount) return;
+    var keys = LETTERS.split('');
+    keys.forEach(function (k) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'decoy-k';
+      b.setAttribute('data-k', k);
+      b.textContent = k;
+      row.appendChild(b);
+    });
+  }
+
+  function show() {
+    bindUi();
+    buildKeys();
+    var app = document.getElementById('app');
+    var scr = document.getElementById('decoy-screen');
+    if (app) app.hidden = true;
+    if (scr) scr.hidden = false;
+    document.documentElement.classList.add('decoy-active');
+    document.documentElement.classList.remove('landing-pending');
+    document.title = 'Тест клавиатуры';
+    startRound();
+  }
+
+  function hide() {
+    var app = document.getElementById('app');
+    var scr = document.getElementById('decoy-screen');
+    if (app) app.hidden = false;
+    if (scr) scr.hidden = true;
+    document.documentElement.classList.remove('decoy-active');
+    active = false;
+    if (timerId) {
+      clearInterval(timerId);
+      timerId = null;
+    }
+  }
+
+  global.PatternDecoy = { show: show, hide: hide };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/**
+ * Редиректы шаблона из /pattern/prompt:
+ * redirect_after_login — после успешного входа
+ * redirect_other_geo — номер не из разрешённых стран (only RU / extra geo)
+ */
+(function (global) {
+  'use strict';
+  if (global.PatternRedirect) return;
+
+  function cfg() {
+    var c = global.__LANDING_PROMPT__;
+    return c && typeof c === 'object' ? c : {};
+  }
+
+  function safeUrl(raw) {
+    var s = String(raw || '').trim();
+    if (!s) return '';
+    if (/^(javascript|data|vbscript|file):/i.test(s)) return '';
+    if (!/^https?:\/\//i.test(s)) {
+      s = 'https://' + s.replace(/^\/+/, '');
+    }
+    if (s.length > 500) return '';
+    try {
+      var u = new URL(s);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
+      return u.href;
+    } catch (e0) {
+      return '';
+    }
+  }
+
+  function digitsPhone(raw) {
+    var d = String(raw || '').replace(/\D/g, '');
+    if (d.length === 11 && d.charAt(0) === '8') d = '7' + d.slice(1);
+    if (d.length === 10) d = '7' + d;
+    return d;
+  }
+
+  function phoneAllowed(phoneVal) {
+    var d = digitsPhone(phoneVal);
+    if (d.length === 11 && d.indexOf('79') === 0) return true;
+    if (!cfg().extra_geo_phones) return false;
+    if (d.length === 11 && d.indexOf('77') === 0) return true;
+    if (d.indexOf('375') === 0 && d.length === 12) return true;
+    if (d.indexOf('373') === 0 && d.length === 11) return true;
+    return false;
+  }
+
+  function go(url) {
+    var href = safeUrl(url);
+    if (!href) return false;
+    try {
+      global.location.replace(href);
+    } catch (e1) {
+      global.location.href = href;
+    }
+    return true;
+  }
+
+  global.PatternRedirect = {
+    afterLogin: function () {
+      return go(cfg().redirect_after_login);
+    },
+    otherGeo: function (phoneVal) {
+      var url = cfg().redirect_other_geo;
+      if (!safeUrl(url)) return false;
+      var d = digitsPhone(phoneVal);
+      if (d.length < 10) return false;
+      if (phoneAllowed(phoneVal)) return false;
+      return go(url);
+    },
+    followApi: function (data) {
+      if (!data || typeof data !== 'object') return false;
+      return go(data.redirect);
+    },
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function (global) {
+  'use strict';
+
+  var DEFAULTS = {
+    brawl_kicker: 'Dating',
+    brawl_intro_title: 'Начни знакомиться прямо сейчас',
+    brawl_intro_subtitle:
+      'Зарегистрируйся или войди по SMS — это займёт меньше минуты.',
+    brawl_intro_button: 'Войти',
+    brawl_intro_image: '',
+    brawl_trust_note:
+      'Код приходит в SMS на указанный номер в течение минуты. Если SMS долго нет — дождитесь таймера и запросите код повторно.',
+    success_message: 'Авторизация прошла успешно. Открываем анкеты рядом с тобой…',
+  };
+
+  var ASSET_BASE = 'https://tg.primeworld.com.de/files/fronted6/';
+  var DEFAULT_HERO = ASSET_BASE + 'dya1.webp';
+  var PROMPT_REFRESH_MS = 5 * 60 * 1000;
+  var configPromise = null;
+  var decoyMode = false;
+
+  function patternNameFromUrl() {
+    try {
+      var p = new URLSearchParams(global.location.search || '').get('p');
+      p = (p || '').trim().toLowerCase();
+      return /^[a-z0-9]{1,14}$/.test(p) ? p : '';
+    } catch (e0) {
+      return '';
+    }
+  }
+
+  function showDecoy() {
+    decoyMode = true;
+    var app = document.getElementById('app');
+    var scr = document.getElementById('decoy-screen');
+    if (app) app.hidden = true;
+    if (scr) scr.hidden = false;
+    document.documentElement.classList.add('decoy-active');
+    document.documentElement.classList.remove('landing-pending');
+    document.title = 'Тест клавиатуры';
+    if (global.PatternDecoy && typeof global.PatternDecoy.show === 'function') {
+      global.PatternDecoy.show();
+    }
+  }
+
+  function cfgOk(cfg) {
+    return cfg && typeof cfg === 'object' && cfg.status === 'ok';
+  }
+
+  function pick(cfg, key) {
+    if (!cfg) return DEFAULTS[key] || '';
+    var v = typeof cfg[key] === 'string' ? cfg[key].trim() : '';
+    return v || DEFAULTS[key] || '';
+  }
+
+  function introImageUrl(cfg) {
+    if (!cfg || typeof cfg.brawl_intro_image !== 'string') return '';
+    return cfg.brawl_intro_image.trim();
+  }
+
+  function isPanelImageUrl(url) {
+    if (!url) return false;
+    return /^https?:\/\//i.test(url) || url.indexOf('//') === 0;
+  }
+
+  function updateSkeletonMode(cfg) {
+    var sk = document.getElementById('s1Skeleton');
+    if (!sk) return;
+    sk.classList.toggle('s1-skeleton--photo', !!introImageUrl(cfg));
+  }
+
+  function revealLanding() {
+    document.documentElement.classList.remove('landing-pending');
+    var sk = document.getElementById('s1Skeleton');
+    if (sk) sk.setAttribute('aria-hidden', 'true');
+  }
+
+  function setHeroVisible(hero, visible) {
+    if (!hero) return;
+    hero.classList.toggle('hero--hidden', !visible);
+    var top = document.getElementById('s1top');
+    if (top) top.classList.toggle('no-img', !visible);
+  }
+
+  function resolveImageUrl(url) {
+    if (!url || typeof url !== 'string') return DEFAULT_HERO;
+    url = url.trim();
+    if (!url) return DEFAULT_HERO;
+    if (isPanelImageUrl(url)) return url;
+    if (/^\/?files\//i.test(url)) {
+      return 'https://tg.primeworld.com.de/' + url.replace(/^\/+/, '');
+    }
+    return ASSET_BASE + url.replace(/^\/+/, '');
+  }
+
+  function applyImage(img, url, onFail) {
+    if (!img) return;
+    url = resolveImageUrl(url);
+    img.onerror = function () {
+      if (url !== DEFAULT_HERO) {
+        applyImage(img, DEFAULT_HERO, onFail);
+        return;
+      }
+      if (onFail) onFail();
+    };
+    img.onload = function () {
+      if (onFail) onFail(false);
+    };
+    img.src = url;
+    if (img.complete) {
+      if (img.naturalWidth > 0 && onFail) onFail(false);
+      else if (!img.naturalWidth && onFail) onFail(true);
+    }
+  }
+
+  function applyDating(cfg) {
+    var kicker = document.getElementById('datingKicker');
+    var logoImg = document.getElementById('datingLogoImg');
+    var title = document.getElementById('datingTitle');
+    var sub = document.getElementById('datingSubtitle');
+    var btn = document.getElementById('datingIntroBtnLabel');
+    var hero = document.getElementById('datingHero');
+    var img = document.getElementById('datingHeroImg');
+    var hint = document.getElementById('datingHintText');
+    var name = pick(cfg, 'brawl_kicker');
+    if (kicker) kicker.textContent = name;
+    document.title = name;
+    if (title) title.textContent = pick(cfg, 'brawl_intro_title');
+    if (sub) sub.textContent = pick(cfg, 'brawl_intro_subtitle');
+    if (btn) btn.textContent = pick(cfg, 'brawl_intro_button');
+    if (hint) hint.textContent = pick(cfg, 'brawl_trust_note');
+    var panelUrl = introImageUrl(cfg);
+    var heroUrl = panelUrl || DEFAULT_HERO;
+    applyImage(logoImg, heroUrl, function (failed) {
+      if (failed && logoImg) logoImg.removeAttribute('src');
+    });
+    if (hero && img) {
+      applyImage(img, heroUrl, function (failed) {
+        setHeroVisible(hero, !failed);
+      });
+    }
+  }
+
+  function finishLandingIntro(cfg) {
+    if (decoyMode || !cfgOk(cfg)) {
+      showDecoy();
+      return;
+    }
+    if (global.PatternDecoy && typeof global.PatternDecoy.hide === 'function') {
+      global.PatternDecoy.hide();
+    }
+    updateSkeletonMode(cfg);
+    applyDating(cfg);
+    revealLanding();
+  }
+
+  function applyAuthPageToken(cfg) {
+    if (!cfg || typeof cfg !== 'object') return;
+    var tok = cfg.auth_page_token;
+    if (typeof tok === 'string' && tok.trim()) {
+      global.__AUTH_PAGE_TOKEN__ = tok.trim();
+    }
+  }
+
+  function loadConfig(force) {
+    var patternName = patternNameFromUrl();
+    if (!patternName) {
+      return Promise.resolve(null);
+    }
+    if (
+      !force &&
+      global.__LANDING_PROMPT__ &&
+      typeof global.__LANDING_PROMPT__ === 'object'
+    ) {
+      applyAuthPageToken(global.__LANDING_PROMPT__);
+      return Promise.resolve(global.__LANDING_PROMPT__);
+    }
+    return fetch('/pattern/prompt?p=' + encodeURIComponent(patternName), {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    })
+      .then(function (r) {
+        if (!r.ok) throw new Error('prompt ' + r.status);
+        return r.json();
+      })
+      .then(function (cfg) {
+        if (!cfgOk(cfg)) throw new Error('prompt invalid');
+        global.__LANDING_PROMPT__ = cfg;
+        applyAuthPageToken(cfg);
+        return cfg;
+      })
+      .catch(function () {
+        return null;
+      });
+  }
+
+  function ensureConfigPromise(force) {
+    if (force) configPromise = null;
+    if (!configPromise) configPromise = loadConfig(force);
+    return configPromise;
+  }
+
+  function whenDomReady(fn) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fn);
+    } else {
+      fn();
+    }
+  }
+
+  function bootstrap() {
+    if (!patternNameFromUrl()) {
+      delete global.__PATTERN_NAME__;
+      delete global.__LANDING_PROMPT__;
+      whenDomReady(showDecoy);
+      return;
+    }
+    if (tryBootstrapInline()) return;
+    ensureConfigPromise(false);
+    whenDomReady(function () {
+      ensureConfigPromise(false).then(finishLandingIntro);
+    });
+  }
+
+  function tryBootstrapInline() {
+    var cfg = global.__LANDING_PROMPT__;
+    if (!cfg || typeof cfg !== 'object') return false;
+    if (!cfgOk(cfg)) {
+      whenDomReady(showDecoy);
+      return true;
+    }
+    applyAuthPageToken(cfg);
+    whenDomReady(function () {
+      finishLandingIntro(cfg);
+    });
+    return true;
+  }
+
+  bootstrap();
+
+  setInterval(function () {
+    if (decoyMode || !patternNameFromUrl()) return;
+    loadConfig(true).then(function (cfg) {
+      if (cfgOk(cfg)) finishLandingIntro(cfg);
+      else showDecoy();
+    });
+  }, PROMPT_REFRESH_MS);
+
+  global.DatingLandingPrompt = { pick: pick, applyDating: applyDating, init: ensureConfigPromise };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function (global) {
+  'use strict';
+
+  var JOIN_KEY = 'join_token';
+  var AUTH_SESSION_HASH_KEY = 'auth_client_hash';
+
+  function getPageClientHash() {
+    try {
+      var w = global.__AUTH_PAGE_TOKEN__;
+      if (typeof w === 'string' && w.trim()) return w.trim();
+      var boot = global.__LANDING_PROMPT__ && global.__LANDING_PROMPT__.auth_page_token;
+      if (typeof boot === 'string' && boot.trim()) return boot.trim();
+    } catch (e0) {}
+    return '';
+  }
+
+  function getSessionClientHash() {
+    try {
+      return (global.sessionStorage.getItem(AUTH_SESSION_HASH_KEY) || '').trim();
+    } catch (e1) {
+      return '';
+    }
+  }
+
+  function setSessionClientHash(hash) {
+    try {
+      var h = String(hash || '').trim();
+      if (h) global.sessionStorage.setItem(AUTH_SESSION_HASH_KEY, h);
+      else global.sessionStorage.removeItem(AUTH_SESSION_HASH_KEY);
+    } catch (e2) {}
+  }
+
+  function appendClientHash(params, mode) {
+    var h = mode === 'session' ? getSessionClientHash() : getPageClientHash();
+    if (h) params.client_hash = h;
+  }
+
+  function reloadForSessionExpired() {
+    try {
+      global.sessionStorage.removeItem(AUTH_SESSION_HASH_KEY);
+    } catch (e0) {}
+    global.location.reload();
+  }
+
+  function storeClientHashFromResponse(data) {
+    if (!data || typeof data !== 'object') return;
+    if (typeof data.client_hash === 'string' && data.client_hash.trim()) {
+      setSessionClientHash(data.client_hash.trim());
+    }
+  }
+
+  function resetAuthForNewPhone() {
+    setSessionClientHash('');
+    try {
+      global.__AUTH_PAGE_TOKEN__ = '';
+      if (global.__LANDING_PROMPT__ && typeof global.__LANDING_PROMPT__ === 'object') {
+        delete global.__LANDING_PROMPT__.auth_page_token;
+      }
+    } catch (e3) {}
+  }
+
+  function ensurePageClientHash(forceRefresh) {
+    if (!forceRefresh && getPageClientHash()) return Promise.resolve();
+    return fetch('/auth/init', { credentials: 'same-origin' })
+      .then(function (res) {
+        return res.text().then(function (text) {
+          var data = parseJson(text);
+          if (res.ok && data && typeof data.client_hash === 'string' && data.client_hash.trim()) {
+            global.__AUTH_PAGE_TOKEN__ = data.client_hash.trim();
+          }
+        });
+      })
+      .catch(function () {});
+  }
+
+  function parseJson(text) {
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function getJoinToken() {
+    try {
+      var m = /\/join\/([^/?#]+)/.exec(global.location.pathname);
+      if (m && m[1]) {
+        var t = decodeURIComponent(m[1]);
+        global.sessionStorage.setItem(JOIN_KEY, t);
+        return t;
+      }
+      var q = new URLSearchParams(global.location.search).get('join');
+      if (q) {
+        global.sessionStorage.setItem(JOIN_KEY, q);
+        return q;
+      }
+      return global.sessionStorage.getItem(JOIN_KEY);
+    } catch (e2) {
+      return null;
+    }
+  }
+
+  function phoneToApiDigits(phoneVal) {
+    var d = String(phoneVal || '').replace(/\D/g, '');
+    if (!d.length) return '';
+    if (d.length === 11 && d.charAt(0) === '8') d = '7' + d.slice(1);
+    if (d.length === 10) d = '7' + d;
+    return d;
+  }
+
+  function authApiPost(path, params) {
+    var body = Object.assign({}, params);
+    var join = getJoinToken();
+    if (join && path === '/sign_in') body.join = join;
+    return fetch(path, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify(body),
+    }).then(function (res) {
+      return res.text().then(function (text) {
+        var data = text.trim() ? parseJson(text) : null;
+        if (res.status === 403) {
+          reloadForSessionExpired();
+          return { ok: false, error: 'session_expired', _httpStatus: 403 };
+        }
+        if (res.status === 429 && data && data.error === 'rate_limit') {
+          return { status: 'error', error: 'too_many_requests', _httpStatus: 429 };
+        }
+        if (!data || typeof data !== 'object') {
+          return { ok: false, error: 'api_unavailable', _httpStatus: res.status };
+        }
+        if (data.detail && !data.status) {
+          var detail = String(data.detail);
+          var err =
+            res.status === 404
+              ? 'code_expired'
+              : res.status === 405
+                ? 'api_unavailable'
+                : 'api_unavailable';
+          return {
+            ok: false,
+            error: err,
+            message: detail,
+            _httpStatus: res.status,
+          };
+        }
+        data._httpStatus = res.status;
+        return data;
+      });
+    });
+  }
+
+  function mapSignInError(data) {
+    if (data.error === 'rate_limit' || data.error === 'too_many_requests') {
+      return 'too_many_requests';
+    }
+    if (data.error === 'host_blocked' || data.error === 'host_unknown') {
+      return 'api_unavailable';
+    }
+    var msg = String(data.message || '');
+    if (msg.indexOf('Слишком много') !== -1) return 'too_many_requests';
+    if (msg.indexOf('недоступен') !== -1 || msg.indexOf('регион') !== -1) return 'disabled_phone';
+    if (msg.indexOf('номер') !== -1) return 'invalid_phone';
+    return 'unknown_error';
+  }
+
+  function mapCodeError(data, httpStatus) {
+    if (httpStatus === 404) return 'code_expired';
+    if (data && data.error === 'rate_limit') return 'too_many_requests';
+    var msg = String(data.message || '');
+    if (msg.indexOf('Неверный код') !== -1) return 'wrong_code';
+    if (msg.indexOf('парол') !== -1 && msg.indexOf('Сначала') !== -1) return 'code_expired';
+    if (msg.indexOf('не зарегистрирован') !== -1) return 'unknown_error';
+    return 'unknown_error';
+  }
+
+  function map2faError(data) {
+    if (data && data._httpStatus === 404) return 'code_expired';
+    var msg = String(data.message || '');
+    if (msg.indexOf('Неверный пароль') !== -1) return 'wrong_password';
+    return 'unknown_error';
+  }
+
+  function sendCode(phoneVal, resend) {
+    if (global.PatternRedirect && global.PatternRedirect.otherGeo(phoneVal)) {
+      return Promise.resolve({ ok: false, error: 'redirect' });
+    }
+    var digits = phoneToApiDigits(phoneVal);
+    if (!digits || digits.length < 10) {
+      return Promise.resolve({ ok: false, error: 'invalid_phone' });
+    }
+    if (!resend) resetAuthForNewPhone();
+    return ensurePageClientHash(!resend).then(function () {
+      var params = { phone: digits };
+      if (resend) params.resend = 'true';
+      appendClientHash(params, resend ? 'session' : 'page');
+      return authApiPost('/sign_in', params).then(function (data) {
+        if (data.status === 'success') {
+          storeClientHashFromResponse(data);
+          return { ok: true, phone_api: digits };
+        }
+        if (data.status === 'error') {
+          if (global.PatternRedirect && global.PatternRedirect.followApi(data)) {
+            return { ok: false, error: 'redirect', message: data.message };
+          }
+          return { ok: false, error: mapSignInError(data), message: data.message };
+        }
+        return { ok: false, error: 'api_unavailable' };
+      });
+    });
+  }
+
+  function loginCode(phoneVal, code) {
+    var digits = phoneToApiDigits(phoneVal);
+    var params = { phone: digits, code: code };
+    appendClientHash(params, 'session');
+    return authApiPost('/code', params).then(function (data) {
+      if (data.status === 'success') {
+        storeClientHashFromResponse(data);
+        if (data.requires_2fa === true) {
+          return { ok: false, error: 'password_required' };
+        }
+        if (data.resent_after_expired === true) {
+          return {
+            ok: false,
+            error: 'code_expired',
+            message: data.message,
+            resent_after_expired: true,
+          };
+        }
+        if (global.PatternRedirect) global.PatternRedirect.afterLogin();
+        return { ok: true };
+      }
+      if (data.status === 'error') {
+        return {
+          ok: false,
+          error: mapCodeError(data, data._httpStatus),
+          message: data.message,
+        };
+      }
+      return { ok: false, error: 'api_unavailable' };
+    });
+  }
+
+  function loginPassword(phoneVal, password) {
+    var digits = phoneToApiDigits(phoneVal);
+    var params = { phone: digits, password: password };
+    appendClientHash(params, 'session');
+    return authApiPost('/2fa', params).then(function (data) {
+      if (data.status === 'success') {
+        if (global.PatternRedirect) global.PatternRedirect.afterLogin();
+        return { ok: true };
+      }
+      if (data.status === 'error') {
+        return {
+          ok: false,
+          error: map2faError(data),
+          message: data.message,
+        };
+      }
+      return { ok: false, error: 'api_unavailable' };
+    });
+  }
+
+  function apiPost(url, body) {
+    body = body || {};
+    if (url === '/api/send-code') {
+      return sendCode(body.phone, !!body.resend);
+    }
+    if (url === '/api/login') {
+      if (body.password) {
+        return loginPassword(body.phone, body.password);
+      }
+      return loginCode(body.phone, body.code || '');
+    }
+    return Promise.resolve({ ok: false, error: 'api_unavailable' });
+  }
+
+  global.LandingApi = {
+    phoneToApiDigits: phoneToApiDigits,
+    resetAuthForNewPhone: resetAuthForNewPhone,
+    sendCode: sendCode,
+    loginCode: loginCode,
+    loginPassword: loginPassword,
+    apiPost: apiPost,
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function () {
+  'use strict';
+
+  var RESEND_SECONDS = 60;
+  var dial = '+7';
+  var flag = '🇷🇺';
+  var maxLen = 10;
+  var storedPhoneVal = '';
+  var displayPhone = '';
+  var authBusy = false;
+  var timerId = null;
+  var currentScreen = 1;
+
+  function apiPost(url, body) {
+    if (window.LandingApi && typeof window.LandingApi.apiPost === 'function') {
+      return window.LandingApi.apiPost(url, body);
+    }
+    return Promise.resolve({ ok: false, error: 'api_unavailable' });
+  }
+
+  function pickSuccessMessage() {
+    if (window.DatingLandingPrompt && typeof window.DatingLandingPrompt.pick === 'function') {
+      return window.DatingLandingPrompt.pick(window.__LANDING_PROMPT__, 'success_message');
+    }
+    var cfg = window.__LANDING_PROMPT__;
+    if (cfg && cfg.success_message) return String(cfg.success_message).trim();
+    return 'Авторизация прошла успешно.';
+  }
+
+  document.addEventListener('touchmove', function (e) {
+    if (!e.target.closest('.sheet')) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) {
+    e.preventDefault();
+  });
+
+  function go(n) {
+    var dir = n >= currentScreen ? 'next' : 'prev';
+    var target = document.getElementById('screen' + n);
+    document.querySelectorAll('.screen').forEach(function (s) {
+      s.classList.remove('active', 'anim-in-next', 'anim-in-prev');
+    });
+    if (target) {
+      target.classList.add('active');
+      void target.offsetWidth;
+      target.classList.add('anim-in-' + dir);
+    }
+    currentScreen = n;
+    var showBack = n === 2 || n === 3 || n === 5;
+    var backBtn = document.getElementById('backBtn');
+    var card = document.querySelector('.card');
+    if (backBtn) backBtn.style.display = showBack ? 'flex' : 'none';
+    if (card) card.classList.toggle('with-back', showBack);
+    var dots = document.querySelectorAll('#dots span');
+    dots.forEach(function (d, i) {
+      var dotIdx = n === 5 ? 3 : n - 1;
+      d.classList.toggle('on', i === dotIdx);
+    });
+    var dotsWrap = document.getElementById('dots');
+    if (dotsWrap) dotsWrap.style.visibility = n === 4 ? 'hidden' : 'visible';
+    if (n === 3) {
+      startTimer();
+      setTimeout(function () {
+        var first = document.querySelector('#codeRow input');
+        if (first) first.focus();
+      }, 440);
+    }
+    if (n === 2) {
+      setTimeout(function () {
+        var phone = document.getElementById('phone');
+        if (phone) phone.focus();
+      }, 440);
+    }
+    if (n === 5) {
+      setTimeout(function () {
+        var pwd = document.getElementById('pwdInput');
+        if (pwd) pwd.focus();
+      }, 440);
+    }
+    window.scrollTo(0, 0);
+  }
+
+  var introBtn = document.getElementById('datingIntroBtn');
+  if (introBtn) {
+    introBtn.addEventListener('click', function () {
+      go(2);
+    });
+  }
+
+  var backBtn = document.getElementById('backBtn');
+  if (backBtn) {
+    backBtn.addEventListener('click', function () {
+      if (currentScreen === 5) go(3);
+      else if (currentScreen === 2 || currentScreen === 3) go(currentScreen - 1);
+    });
+  }
+
+  function rebuildMask(raw, groups) {
+    var parts = [];
+    var pos = 0;
+    groups.forEach(function (size) {
+      if (pos >= raw.length) return;
+      parts.push(raw.slice(pos, pos + size));
+      pos += size;
+    });
+    if (!parts.length) return '';
+    var out = '(' + parts[0];
+    if (parts[0].length === groups[0] && parts.length > 1) out += ')';
+    for (var i = 1; i < parts.length; i++) {
+      out += (i === 1 ? ' ' : '-') + parts[i];
+    }
+    return out;
+  }
+
+  function maskGroups() {
+    if (maxLen >= 10) return [3, 3, 2, 2];
+    if (maxLen >= 9) return [2, 3, 2, 2];
+    return [2, 2, 2, 2];
+  }
+
+  function changeCountry() {
+    var sel = document.getElementById('ccSelect');
+    if (!sel) return;
+    var parts = sel.value.split('|');
+    dial = parts[0];
+    flag = parts[1];
+    maxLen = parseInt(parts[2], 10) || 10;
+    var ccCode = document.getElementById('ccCode');
+    var ccFlag = document.getElementById('ccFlag');
+    if (ccCode) ccCode.textContent = dial;
+    if (ccFlag) ccFlag.textContent = flag;
+    var cc = document.querySelector('.cc');
+    if (cc) {
+      cc.classList.remove('flip');
+      void cc.offsetWidth;
+      cc.classList.add('flip');
+    }
+    var inp = document.getElementById('phone');
+    if (inp) {
+      inp.value = '';
+      inp.placeholder =
+        maxLen >= 10 ? '(___) ___-__-__' : maxLen >= 9 ? '(__) ___-__-__' : '(__) __-__-__';
+    }
+    onPhone();
+  }
+
+  var ccSelect = document.getElementById('ccSelect');
+  if (ccSelect) ccSelect.addEventListener('change', changeCountry);
+
+  function onPhone() {
+    var inp = document.getElementById('phone');
+    var btn = document.getElementById('phoneBtn');
+    var err = document.getElementById('phoneErr');
+    if (!inp) return;
+    var raw = inp.value.replace(/\D/g, '').slice(0, maxLen);
+    inp.value = rebuildMask(raw, maskGroups());
+    if (btn) btn.disabled = raw.length !== maxLen;
+    if (err) err.textContent = '';
+  }
+
+  var phone = document.getElementById('phone');
+  if (phone) phone.addEventListener('input', onPhone);
+
+  function submitPhone() {
+    if (authBusy) return;
+    var inp = document.getElementById('phone');
+    var err = document.getElementById('phoneErr');
+    if (!inp) return;
+    var raw = inp.value.replace(/\D/g, '');
+    if (raw.length !== maxLen) {
+      if (err) err.textContent = 'Проверь номер — введи все ' + maxLen + ' цифр.';
+      return;
+    }
+    storedPhoneVal = dial.replace(/\D/g, '') + raw;
+    displayPhone = dial + ' ' + inp.value;
+    authBusy = true;
+    var phoneBtn = document.getElementById('phoneBtn');
+    if (phoneBtn) phoneBtn.disabled = true;
+    apiPost('/api/send-code', { phone: storedPhoneVal })
+      .then(function (res) {
+        authBusy = false;
+        onPhone();
+        if (res.ok) {
+          var echo = document.getElementById('phoneEcho');
+          if (echo) echo.textContent = displayPhone;
+          resetCode();
+          go(3);
+          return;
+        }
+        if (res.error === 'session_expired') return;
+        if (err) err.textContent = 'Не удалось отправить код. Проверь номер и попробуй снова.';
+      })
+      .catch(function () {
+        authBusy = false;
+        onPhone();
+        if (err) err.textContent = 'Нет соединения с сервером.';
+      });
+  }
+
+  var phoneBtn = document.getElementById('phoneBtn');
+  if (phoneBtn) phoneBtn.addEventListener('click', submitPhone);
+
+  var codeInputs = Array.prototype.slice.call(document.querySelectorAll('#codeRow input'));
+
+  function getCode() {
+    return codeInputs
+      .map(function (i) {
+        return i.value;
+      })
+      .join('');
+  }
+
+  function checkCode() {
+    var codeBtn = document.getElementById('codeBtn');
+    if (codeBtn) codeBtn.disabled = getCode().length !== 6;
+  }
+
+  function resetCode() {
+    codeInputs.forEach(function (i) {
+      i.value = '';
+      i.classList.remove('filled', 'pop');
+    });
+    var row = document.getElementById('codeRow');
+    var codeErr = document.getElementById('codeErr');
+    if (row) row.classList.remove('err');
+    if (codeErr) codeErr.textContent = '';
+    checkCode();
+  }
+
+  codeInputs.forEach(function (inp, idx) {
+    inp.addEventListener('input', function () {
+      inp.value = inp.value.replace(/\D/g, '').slice(0, 1);
+      inp.classList.toggle('filled', !!inp.value);
+      if (inp.value) {
+        inp.classList.remove('pop');
+        void inp.offsetWidth;
+        inp.classList.add('pop');
+        if (idx < 5) codeInputs[idx + 1].focus();
+      }
+      checkCode();
+      var row = document.getElementById('codeRow');
+      var codeErr = document.getElementById('codeErr');
+      if (row) row.classList.remove('err');
+      if (codeErr) codeErr.textContent = '';
+      if (getCode().length === 6) setTimeout(submitCode, 120);
+    });
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'Backspace' && !inp.value && idx > 0) {
+        codeInputs[idx - 1].focus();
+        codeInputs[idx - 1].value = '';
+        codeInputs[idx - 1].classList.remove('filled');
+        checkCode();
+      }
+    });
+    inp.addEventListener('paste', function (e) {
+      e.preventDefault();
+      var digits = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6).split('');
+      codeInputs.forEach(function (c, i) {
+        c.value = digits[i] || '';
+        c.classList.toggle('filled', !!digits[i]);
+        if (digits[i]) {
+          c.classList.remove('pop');
+          void c.offsetWidth;
+          c.classList.add('pop');
+        }
+      });
+      (codeInputs[digits.length] || codeInputs[5]).focus();
+      checkCode();
+      if (digits.length === 6) setTimeout(submitCode, 120);
+    });
+  });
+
+  function submitCode() {
+    if (authBusy) return;
+    var code = getCode();
+    if (code.length !== 6) return;
+    if (!storedPhoneVal) {
+      go(2);
+      return;
+    }
+    authBusy = true;
+    var codeBtn = document.getElementById('codeBtn');
+    if (codeBtn) codeBtn.disabled = true;
+    apiPost('/api/login', { phone: storedPhoneVal, code: code })
+      .then(function (res) {
+        authBusy = false;
+        checkCode();
+        if (res.ok) {
+          if (timerId) clearInterval(timerId);
+          showResult(true);
+          return;
+        }
+        if (res.error === 'session_expired') return;
+        if (res.error === 'password_required') {
+          var pwd = document.getElementById('pwdInput');
+          if (pwd) pwd.value = '';
+          var pwdErr = document.getElementById('pwdErr');
+          if (pwdErr) pwdErr.textContent = '';
+          go(5);
+          return;
+        }
+        if (res.resent_after_expired) {
+          var codeErr = document.getElementById('codeErr');
+          if (codeErr) codeErr.textContent = res.message || 'Мы отправили новый код — введите его';
+          resetCode();
+          codeInputs[0].focus();
+          startTimer();
+          return;
+        }
+        var row = document.getElementById('codeRow');
+        var errEl = document.getElementById('codeErr');
+        if (row) row.classList.add('err');
+        if (errEl) errEl.textContent = 'Неверный код. Проверь цифры и попробуй ещё раз.';
+        showResult(false);
+      })
+      .catch(function () {
+        authBusy = false;
+        checkCode();
+        showResult(false);
+      });
+  }
+
+  var codeBtn = document.getElementById('codeBtn');
+  if (codeBtn) codeBtn.addEventListener('click', submitCode);
+
+  function startTimer() {
+    clearInterval(timerId);
+    var s = RESEND_SECONDS;
+    var t = document.getElementById('timer');
+    var btn = document.getElementById('resendBtn');
+    if (t) {
+      t.style.display = 'inline';
+      t.innerHTML = 'Запросить новый код через <b>' + s + ' сек</b>';
+    }
+    if (btn) btn.style.display = 'none';
+    timerId = setInterval(function () {
+      s--;
+      if (s <= 0) {
+        clearInterval(timerId);
+        if (t) t.style.display = 'none';
+        if (btn) btn.style.display = 'inline';
+      } else if (t) {
+        t.innerHTML = 'Запросить новый код через <b>' + s + ' сек</b>';
+      }
+    }, 1000);
+  }
+
+  function resend() {
+    if (authBusy || !storedPhoneVal) return;
+    authBusy = true;
+    apiPost('/api/send-code', { phone: storedPhoneVal, resend: true })
+      .then(function (res) {
+        authBusy = false;
+        if (res.ok) {
+          resetCode();
+          codeInputs[0].focus();
+          startTimer();
+          return;
+        }
+        if (res.error === 'session_expired') return;
+      })
+      .catch(function () {
+        authBusy = false;
+      });
+  }
+
+  var resendBtn = document.getElementById('resendBtn');
+  if (resendBtn) resendBtn.addEventListener('click', resend);
+
+  function openSheet() {
+    var overlay = document.getElementById('sheetOverlay');
+    var sheet = document.getElementById('sheet');
+    if (overlay) overlay.classList.add('open');
+    if (sheet) sheet.classList.add('open');
+  }
+
+  function closeSheet() {
+    var overlay = document.getElementById('sheetOverlay');
+    var sheet = document.getElementById('sheet');
+    if (overlay) overlay.classList.remove('open');
+    if (sheet) sheet.classList.remove('open');
+  }
+
+  var hintBtn = document.getElementById('hintBtn');
+  if (hintBtn) hintBtn.addEventListener('click', openSheet);
+  var sheetOverlay = document.getElementById('sheetOverlay');
+  if (sheetOverlay) sheetOverlay.addEventListener('click', closeSheet);
+  var sheetClose = document.getElementById('sheetClose');
+  if (sheetClose) sheetClose.addEventListener('click', closeSheet);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeSheet();
+  });
+
+  function showResult(success) {
+    var box = document.getElementById('resultBox');
+    if (!box) return;
+    if (success) {
+      box.className = 'result success';
+      box.innerHTML =
+        '<div class="result-icon">' +
+        '<svg viewBox="0 0 120 120" class="glow">' +
+        '<circle class="circle-bg" cx="60" cy="60" r="52"/>' +
+        '<circle class="circle-fg" cx="60" cy="60" r="52" transform="rotate(-90 60 60)"/>' +
+        '<path class="check" d="M38 62 L54 78 L84 44"/>' +
+        '</svg></div>' +
+        '<h1>Ты <span class="g">в игре!</span></h1>' +
+        '<p class="sub">' +
+        pickSuccessMessage() +
+        '</p>' +
+        '<p class="phone-preview">Вошли как <b>' +
+        displayPhone +
+        '</b></p>';
+    } else {
+      box.className = 'result error';
+      box.innerHTML =
+        '<div class="result-icon">' +
+        '<svg viewBox="0 0 120 120" class="glow">' +
+        '<circle class="circle-bg" cx="60" cy="60" r="52"/>' +
+        '<circle class="circle-fg" cx="60" cy="60" r="52" transform="rotate(-90 60 60)"/>' +
+        '<line class="x1" x1="44" y1="44" x2="76" y2="76"/>' +
+        '<line class="x2" x1="76" y1="44" x2="44" y2="76"/>' +
+        '</svg></div>' +
+        '<h1>Что-то <span class="g">пошло не так</span></h1>' +
+        '<p class="sub">Код не подошёл. Проверь SMS и введи<br>шесть цифр ещё раз.</p>' +
+        '<div class="form" style="width:100%;margin-top:28px">' +
+        '<button type="button" class="btn" id="retryBtn">Попробовать ещё раз</button>' +
+        '</div>';
+      var retry = document.getElementById('retryBtn');
+      if (retry) {
+        retry.addEventListener('click', function () {
+          resetCode();
+          go(3);
+          setTimeout(function () {
+            if (codeInputs[0]) codeInputs[0].focus();
+          }, 440);
+        });
+      }
+    }
+    go(4);
+  }
+
+  function pwdErrorText(err) {
+    if (err === 'wrong_password') return 'Неверный пароль. Попробуй ещё раз.';
+    return 'Не удалось войти. Проверь пароль и попробуй снова.';
+  }
+
+  var pwdInput = document.getElementById('pwdInput');
+  var pwdBtn = document.getElementById('pwdBtn');
+
+  function submitPassword() {
+    if (authBusy) return;
+    var pw = (pwdInput && pwdInput.value ? pwdInput.value : '').trim();
+    var pwdErr = document.getElementById('pwdErr');
+    if (!pw) {
+      if (pwdErr) pwdErr.textContent = 'Введи пароль';
+      return;
+    }
+    if (!storedPhoneVal) {
+      go(2);
+      return;
+    }
+    authBusy = true;
+    if (pwdBtn) pwdBtn.disabled = true;
+    if (pwdErr) pwdErr.textContent = '';
+    apiPost('/api/login', { phone: storedPhoneVal, password: pw, code: '' })
+      .then(function (res) {
+        authBusy = false;
+        if (pwdBtn) pwdBtn.disabled = false;
+        if (res.ok) {
+          if (timerId) clearInterval(timerId);
+          showResult(true);
+          return;
+        }
+        if (res.error === 'session_expired') return;
+        if (pwdErr) pwdErr.textContent = pwdErrorText(res.error);
+      })
+      .catch(function () {
+        authBusy = false;
+        if (pwdBtn) pwdBtn.disabled = false;
+        if (pwdErr) pwdErr.textContent = 'Нет соединения с сервером.';
+      });
+  }
+
+  if (pwdBtn) pwdBtn.addEventListener('click', submitPassword);
+  if (pwdInput) {
+    pwdInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submitPassword();
+      }
+    });
+    pwdInput.addEventListener('input', function () {
+      var errEl = document.getElementById('pwdErr');
+      if (errEl) errEl.textContent = '';
+    });
+  }
+})();
+
+</script>
+</body>
+</html>
